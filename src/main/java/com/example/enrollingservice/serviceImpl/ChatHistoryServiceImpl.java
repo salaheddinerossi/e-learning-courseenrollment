@@ -134,7 +134,8 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
     @Transactional
     public void deleteRecords(Long chatId) {
         ChatHistory chatHistory = findChatHistoryById(chatId);
-        chatRecordRepository.deleteAll(chatHistory.getChatRecords());
+        chatHistory.getChatRecords().clear();
+        chatHistoryRepository.save(chatHistory);
     }
 
     ChatHistory findChatHistoryById(Long id){
