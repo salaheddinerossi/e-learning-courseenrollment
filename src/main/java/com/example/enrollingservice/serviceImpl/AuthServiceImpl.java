@@ -28,7 +28,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public UserDetailsDto getUserDetailsFromAuthService(String serviceUrl, String token) {
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + token); // Set the token
+        headers.set("Authorization", "Bearer " + token);
         HttpEntity<String> entity = new HttpEntity<>("parameters", headers);
 
         try{
@@ -38,6 +38,7 @@ public class AuthServiceImpl implements AuthService {
                     entity,
                     UserDetailsDto.class
             );
+
             return response.getBody();
 
         }catch (HttpClientErrorException ex){
@@ -50,12 +51,17 @@ public class AuthServiceImpl implements AuthService {
     public Boolean isAdmin(String serviceUrl, String token) {
 
         UserDetailsDto userDetailsDto = this.getUserDetailsFromAuthService(serviceUrl,token);
-        return Objects.equals(userDetailsDto.getRole(), "ADMIN");
+        return Objects.equals(userDetailsDto.getRole(), "ROLE_ADMIN");
     }
 
     @Override
     public Boolean isTeacher(String serviceUrl, String token) {
         UserDetailsDto userDetailsDto = this.getUserDetailsFromAuthService(serviceUrl,token);
-        return Objects.equals(userDetailsDto.getRole(), "TEACHER");
+        return Objects.equals(userDetailsDto.getRole(), "ROLE_TEACHER");
+    }
+
+    @Override
+    public Boolean isStudent(UserDetailsDto userDetailsDto) {
+        return Objects.equals(userDetailsDto.getRole(), "ROLE_STUDENT");
     }
 }

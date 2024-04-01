@@ -4,8 +4,9 @@ import com.example.enrollingservice.model.ChatHistory;
 import com.example.enrollingservice.model.StudentLesson;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
+import java.util.Optional;
 
 public interface ChatHistoryRepository extends JpaRepository<ChatHistory,Long> {
-    List<ChatHistory> findByStudentLesson(StudentLesson studentLesson);
+    Optional<ChatHistory> findByStudentLesson(StudentLesson studentLesson);
+
 }

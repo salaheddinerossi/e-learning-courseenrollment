@@ -22,6 +22,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -68,14 +69,22 @@ public class StudentLessonServiceImpl implements StudentLessonService {
         List<CourseNotes> courseNotes = courseNotesRepository.findByStudentLesson(studentLesson);
         List<CourseNotesResponse> courseNotesResponses = courseNotesMapper.courseNotesListToCourseNotesResponseList(courseNotes);
 
-        List<ChatHistory> chatHistories = chatHistoryRepository.findByStudentLesson(studentLesson);
-        List<ChatHistoryResponse> chatHistoryResponses = chatHistoryMapper.chatHistoryListToChatHistoryResponseList(chatHistories);
+        Optional<ChatHistory> chatHistoryOptional = chatHistoryRepository.findByStudentLesson(studentLesson);
+
+        if (chatHistoryOptional.isPresent()){
+            studentLessonResponse.setIsChatExist(true);
+            ChatHistory chatHistory = chatHistoryOptional.get();
+            List<ChatHistoryResponse> chatHistoryResponses = chatHistoryMapper.chatRecordListToChatHistoryResponseList(chatHistory.getChatRecords());
+
+            studentLessonResponse.setChatHistoryResponseList(chatHistoryResponses);
+        }else{
+            studentLessonResponse.setIsChatExist(false);
+        }
 
         List<StudentQuiz> studentQuizzes = studentQuizRepository.findByStudentLesson(studentLesson);
         List<StudentQuizResponse> studentQuizResponses = studentQuizMapper.studentQuizListToStudentQuizResponseList(studentQuizzes);
 
         studentLessonResponse.setStudentQuizResponses(studentQuizResponses);
-        studentLessonResponse.setChatHistoryResponseList(chatHistoryResponses);
         studentLessonResponse.setCourseNotesResponses(courseNotesResponses);
 
 

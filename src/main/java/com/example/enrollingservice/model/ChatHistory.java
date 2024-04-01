@@ -1,8 +1,10 @@
 package com.example.enrollingservice.model;
 
-
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
@@ -11,13 +13,18 @@ public class ChatHistory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String record;
+    @Lob
+    @Column(name="systemMessage", length=100000)
+    private String systemMessage;
 
-    private Boolean fromStudent;
+    @Lob
+    @Column(name="transcribe", length=100000)
+    private String transcribe;
 
-    @ManyToOne
-    @JoinColumn(name = "student_lesson_id")
-    StudentLesson studentLesson;
+    @OneToMany(mappedBy = "chatHistory", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ChatRecord> chatRecords = new ArrayList<>();
 
-
+    @OneToOne
+    @JoinColumn(name = "student_lesson_id", referencedColumnName = "id")
+    private StudentLesson studentLesson;
 }

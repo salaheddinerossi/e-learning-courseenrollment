@@ -5,7 +5,7 @@ import com.example.enrollingservice.response.CourseEnrollmentResponse;
 public interface CourseEnrollmentService {
 
     // enroll a course
-    void enrollCourse(Long courseId,Long studentId);
+    void enrollCourse(Long courseId,String email);
 
     //get course
     CourseEnrollmentResponse getCourseEnrollmentResponse(Long id);

@@ -13,6 +13,9 @@ public class Quiz {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column
+    Boolean isDeleted;
+
     @ManyToOne
     @JoinColumn(name = "lesson_id")
     private Lesson lesson;

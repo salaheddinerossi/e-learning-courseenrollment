@@ -10,6 +10,8 @@ public class StudentLessonResponse {
 
     private Long id;
 
+    private Boolean isChatExist;
+
     private List<ChatHistoryResponse> chatHistoryResponseList;
 
     private List<CourseNotesResponse> courseNotesResponses;

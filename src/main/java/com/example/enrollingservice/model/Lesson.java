@@ -17,6 +17,8 @@ public class Lesson {
 
     private String title;
 
+    private String transcribe;
+
     @Column
     private Boolean isDeleted;
 

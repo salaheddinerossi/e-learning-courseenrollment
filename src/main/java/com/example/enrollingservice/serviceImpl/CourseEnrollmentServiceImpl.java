@@ -1,6 +1,7 @@
 package com.example.enrollingservice.serviceImpl;
 
 import com.example.enrollingservice.Enums.StudentLessonStatus;
+import com.example.enrollingservice.exception.BadRequestException;
 import com.example.enrollingservice.exception.ResourceNotFoundException;
 import com.example.enrollingservice.model.*;
 import com.example.enrollingservice.repository.CourseEnrollmentRepository;
@@ -37,16 +38,20 @@ public class CourseEnrollmentServiceImpl implements CourseEnrollmentService {
 
     @Override
     @Transactional
-    public void enrollCourse(Long courseId, Long studentId) {
+    public void enrollCourse(Long courseId, String email) {
         CourseEnrollment courseEnrollment = new CourseEnrollment();
 
         Course course = findCourseById(courseId);
+        Student student =findStudentByEmail(email);
+
+        if(courseEnrollmentRepository.findByCourseIdAndStudent(courseId,student).isPresent()){
+            throw  new BadRequestException("you have already enrolled this course");
+        }
+
 
         courseEnrollment.setCourse(course);
-        courseEnrollment.setStudent(findStudentById(studentId));
+        courseEnrollment.setStudent(student);
 
-        StudentLesson studentLesson = new StudentLesson();
-        StudentQuiz studentQuiz = new StudentQuiz();
         for (Lesson lesson:getAllLessons(course)){
 
             if (lesson.getIsDeleted()){
@@ -61,12 +66,19 @@ public class CourseEnrollmentServiceImpl implements CourseEnrollmentService {
                 }
             }
 
+            StudentLesson studentLesson = new StudentLesson();
+
             studentLesson.setCourseEnrollment(courseEnrollment);
             studentLesson.setLesson(lesson);
             studentLesson.setStudentLessonStatus(StudentLessonStatus.INITIAL);
 
             for (Quiz quiz:lesson.getQuizzes()){
 
+                if(quiz.getIsDeleted()){
+                    continue;
+                }
+
+                StudentQuiz studentQuiz = new StudentQuiz();
                 studentQuiz.setQuiz(quiz);
                 studentQuiz.setStudentLesson(studentLesson);
                 studentLesson.getStudentQuizzes().add(studentQuiz);
@@ -193,5 +205,12 @@ public class CourseEnrollmentServiceImpl implements CourseEnrollmentService {
         return courseEnrollmentRepository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("no course enrollment with this id: " +id)
         );
+    }
+
+    private Student findStudentByEmail(String email){
+        return studentRepository.findByEmail(email).orElseThrow(
+                () -> new RuntimeException("Student not found with this email: "+email)
+        );
+
     }
 }
