@@ -1,5 +1,6 @@
 package com.example.enrollingservice.model;
 
+import com.example.enrollingservice.model.Quizzes.Quiz;
 import jakarta.persistence.*;
 import lombok.Data;
 

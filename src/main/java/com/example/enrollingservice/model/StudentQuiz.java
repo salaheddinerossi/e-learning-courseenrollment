@@ -1,6 +1,7 @@
 package com.example.enrollingservice.model;
 
 
+import com.example.enrollingservice.model.Quizzes.Quiz;
 import com.example.enrollingservice.util.StringListToJsonConverter;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -17,7 +18,11 @@ public class StudentQuiz {
 
     private Boolean isPassed;
 
+    private Double mark;
+
     @Convert(converter = StringListToJsonConverter.class)
+    @Lob
+    @Column(name="advices", length=100000)
     private List<String> advices;
 
     @ManyToOne

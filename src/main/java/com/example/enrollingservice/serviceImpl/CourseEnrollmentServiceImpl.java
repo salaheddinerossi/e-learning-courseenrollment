@@ -4,6 +4,7 @@ import com.example.enrollingservice.Enums.StudentLessonStatus;
 import com.example.enrollingservice.exception.BadRequestException;
 import com.example.enrollingservice.exception.ResourceNotFoundException;
 import com.example.enrollingservice.model.*;
+import com.example.enrollingservice.model.Quizzes.Quiz;
 import com.example.enrollingservice.repository.CourseEnrollmentRepository;
 import com.example.enrollingservice.repository.CourseRepository;
 import com.example.enrollingservice.repository.StudentRepository;
@@ -105,6 +106,8 @@ public class CourseEnrollmentServiceImpl implements CourseEnrollmentService {
 
         List<ChapterResponse> chapterResponses = mapChaptersToChapterResponses(course.getChapters(),courseEnrollment);
         courseEnrollmentResponse.setChapterResponses(chapterResponses);
+
+
 
         return courseEnrollmentResponse;
     }

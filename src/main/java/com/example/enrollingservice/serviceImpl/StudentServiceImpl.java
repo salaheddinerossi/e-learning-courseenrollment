@@ -4,9 +4,8 @@ import com.example.enrollingservice.exception.ResourceNotFoundException;
 import com.example.enrollingservice.model.ChatHistory;
 import com.example.enrollingservice.model.Student;
 import com.example.enrollingservice.model.StudentLesson;
-import com.example.enrollingservice.repository.ChatHistoryRepository;
-import com.example.enrollingservice.repository.StudentLessonRepository;
-import com.example.enrollingservice.repository.StudentRepository;
+import com.example.enrollingservice.repository.*;
+import com.example.enrollingservice.service.CourseEnrollmentService;
 import com.example.enrollingservice.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,10 +23,17 @@ public class StudentServiceImpl implements StudentService {
     final
     StudentLessonRepository studentLessonRepository;
 
-    public StudentServiceImpl(StudentRepository studentRepository, StudentLessonRepository studentLessonRepository, ChatHistoryRepository chatHistoryRepository) {
+    final
+    StudentQuizRepository studentQuizRepository;
+
+    @Autowired
+    CourseEnrollmentRepository courseEnrollmentRepository;
+
+    public StudentServiceImpl(StudentRepository studentRepository, StudentLessonRepository studentLessonRepository, ChatHistoryRepository chatHistoryRepository, StudentQuizRepository studentQuizRepository) {
         this.studentRepository = studentRepository;
         this.studentLessonRepository = studentLessonRepository;
         this.chatHistoryRepository = chatHistoryRepository;
+        this.studentQuizRepository = studentQuizRepository;
     }
 
     @Override
@@ -39,6 +45,11 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public Boolean studentHasStudentChat(String email, Long chatId) {
         return findChatHistory(chatId).getStudentLesson().getCourseEnrollment().getStudent() == findStudentByEmail(email);
+    }
+
+    @Override
+    public Boolean studentHasEnrollment(String email, Long courseEnrollmentId) {
+        return courseEnrollmentRepository.findByIdAndStudentEmail(courseEnrollmentId,email).isPresent();
     }
 
     Student findStudentByEmail(String email){

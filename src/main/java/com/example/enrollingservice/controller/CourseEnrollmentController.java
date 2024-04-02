@@ -5,6 +5,7 @@ import com.example.enrollingservice.exception.UnauthorizedException;
 import com.example.enrollingservice.response.CourseEnrollmentResponse;
 import com.example.enrollingservice.service.AuthService;
 import com.example.enrollingservice.service.CourseEnrollmentService;
+import com.example.enrollingservice.service.StudentService;
 import com.example.enrollingservice.util.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,9 +26,13 @@ public class CourseEnrollmentController {
     final
     CourseEnrollmentService courseEnrollmentService;
 
-    public CourseEnrollmentController(CourseEnrollmentService courseEnrollmentService, AuthService authService) {
+    final
+    StudentService studentService;
+
+    public CourseEnrollmentController(CourseEnrollmentService courseEnrollmentService, AuthService authService, StudentService studentService) {
         this.courseEnrollmentService = courseEnrollmentService;
         this.authService = authService;
+        this.studentService = studentService;
     }
 
     @PostMapping("/{id}")
@@ -45,4 +50,16 @@ public class CourseEnrollmentController {
 
     }
 
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<CourseEnrollmentResponse>> getCourseEnrollment(@PathVariable Long id,@RequestHeader("Authorization") String token){
+        UserDetailsDto userDetailsDto = authService.getUserDetailsFromAuthService(authUrl,token);
+
+        if (!studentService.studentHasEnrollment(userDetailsDto.getEmail(),id)){
+            throw new UnauthorizedException("you need to login first");
+        }
+
+        return ResponseEntity.ok(new ApiResponse<>(true,"courseEnrollment has been fetched ",courseEnrollmentService.getCourseEnrollmentResponse(id)));
+
+    }
 }
