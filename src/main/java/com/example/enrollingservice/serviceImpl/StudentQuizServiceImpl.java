@@ -4,6 +4,7 @@ import com.example.enrollingservice.Enums.StudentLessonStatus;
 import com.example.enrollingservice.dto.AnswerDto;
 import com.example.enrollingservice.dto.QuizCorrectionDto;
 import com.example.enrollingservice.dto.QuizzCorrection.*;
+import com.example.enrollingservice.dto.StudentSkillDto;
 import com.example.enrollingservice.exception.BadRequestException;
 import com.example.enrollingservice.exception.ResourceNotFoundException;
 import com.example.enrollingservice.model.CourseEnrollment;
@@ -18,6 +19,7 @@ import com.example.enrollingservice.response.CorrectionResponse;
 import com.example.enrollingservice.response.ExplanatoryQuestionsCorrectionResponse;
 import com.example.enrollingservice.response.QuizCorrectionResponse;
 import com.example.enrollingservice.service.AiService;
+import com.example.enrollingservice.service.EventPublisherService;
 import com.example.enrollingservice.service.StudentQuizService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,13 +50,17 @@ public class StudentQuizServiceImpl implements StudentQuizService {
     final
     CourseEnrollmentRepository courseEnrollmentRepository;
 
-    public StudentQuizServiceImpl(QuizRepository quizRepository, StudentQuizRepository studentQuizRepository, StudentRepository studentRepository, AiService aiService, StudentLessonRepository studentLessonRepository, CourseEnrollmentRepository courseEnrollmentRepository) {
+    final
+    EventPublisherService eventPublisherService;
+
+    public StudentQuizServiceImpl(QuizRepository quizRepository, StudentQuizRepository studentQuizRepository, StudentRepository studentRepository, AiService aiService, StudentLessonRepository studentLessonRepository, CourseEnrollmentRepository courseEnrollmentRepository, EventPublisherService eventPublisherService) {
         this.quizRepository = quizRepository;
         this.studentQuizRepository = studentQuizRepository;
         this.studentRepository = studentRepository;
         this.aiService = aiService;
         this.studentLessonRepository = studentLessonRepository;
         this.courseEnrollmentRepository = courseEnrollmentRepository;
+        this.eventPublisherService = eventPublisherService;
     }
 
 
@@ -194,6 +200,11 @@ public class StudentQuizServiceImpl implements StudentQuizService {
                 courseEnrollment.setIsCompleted(true);
                 courseEnrollmentRepository.save(courseEnrollment);
                 quizCorrectionResponse.setCourseCompleted(true);
+
+                eventPublisherService.publishStudentSkillEvent(new StudentSkillDto(courseEnrollment.getStudent().getId(),courseEnrollment.getCourse().getId()));
+
+
+
             }else {
                 quizCorrectionResponse.setCourseCompleted(false);
             }
@@ -204,6 +215,8 @@ public class StudentQuizServiceImpl implements StudentQuizService {
         quizCorrectionResponse.setIsPassed(studentQuiz.getIsPassed());
         quizCorrectionResponse.setMark(mark);
         quizCorrectionResponse.setId(studentQuiz.getId());
+
+
 
 
         return quizCorrectionResponse;

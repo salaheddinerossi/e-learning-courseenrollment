@@ -22,7 +22,6 @@ public class CourseNotesController {
     @Value("${auth.url}")
     private String authUrl;
 
-
     final
     AuthService authService;
 
