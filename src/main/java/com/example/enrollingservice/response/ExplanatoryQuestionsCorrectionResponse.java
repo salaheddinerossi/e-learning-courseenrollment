@@ -7,7 +7,7 @@ import java.util.List;
 @Data
 public class ExplanatoryQuestionsCorrectionResponse {
 
-    private List<String> advice;
+    private List<String> advices;
 
     private double mark;
 }

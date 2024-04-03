@@ -3,16 +3,19 @@ package com.example.enrollingservice.serviceImpl;
 import com.example.enrollingservice.Enums.StudentLessonStatus;
 import com.example.enrollingservice.exception.BadRequestException;
 import com.example.enrollingservice.exception.ResourceNotFoundException;
+import com.example.enrollingservice.mapper.LessonMapper;
 import com.example.enrollingservice.model.*;
 import com.example.enrollingservice.model.Quizzes.Quiz;
 import com.example.enrollingservice.repository.CourseEnrollmentRepository;
 import com.example.enrollingservice.repository.CourseRepository;
+import com.example.enrollingservice.repository.StudentLessonRepository;
 import com.example.enrollingservice.repository.StudentRepository;
 import com.example.enrollingservice.response.ChapterResponse;
 import com.example.enrollingservice.response.CourseEnrollmentResponse;
 import com.example.enrollingservice.response.StudentLessonStatusResponse;
 import com.example.enrollingservice.service.CourseEnrollmentService;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -31,10 +34,18 @@ public class CourseEnrollmentServiceImpl implements CourseEnrollmentService {
     final
     CourseEnrollmentRepository courseEnrollmentRepository;
 
-    public CourseEnrollmentServiceImpl(CourseEnrollmentRepository courseEnrollmentRepository, CourseRepository courseRepository, StudentRepository studentRepository) {
+    final
+    StudentLessonRepository studentLessonRepository;
+
+    final
+    LessonMapper lessonMapper;
+
+    public CourseEnrollmentServiceImpl(CourseEnrollmentRepository courseEnrollmentRepository, CourseRepository courseRepository, StudentRepository studentRepository, LessonMapper lessonMapper, StudentLessonRepository studentLessonRepository) {
         this.courseEnrollmentRepository = courseEnrollmentRepository;
         this.courseRepository = courseRepository;
         this.studentRepository = studentRepository;
+        this.lessonMapper = lessonMapper;
+        this.studentLessonRepository = studentLessonRepository;
     }
 
     @Override
@@ -107,6 +118,14 @@ public class CourseEnrollmentServiceImpl implements CourseEnrollmentService {
         List<ChapterResponse> chapterResponses = mapChaptersToChapterResponses(course.getChapters(),courseEnrollment);
         courseEnrollmentResponse.setChapterResponses(chapterResponses);
 
+        for (Chapter chapter:course.getChapters()){
+
+
+
+
+        }
+
+
 
 
         return courseEnrollmentResponse;
@@ -152,11 +171,12 @@ public class CourseEnrollmentServiceImpl implements CourseEnrollmentService {
             chapterResponse.setTitle(chapter.getTitle());
             chapterResponse.setContainsChapters(chapter.getContainsChapters());
 
+
             if (chapter.getContainsChapters()) {
                 chapterResponse.setChapterResponses(mapChaptersToChapterResponses(chapter.getChildChapters(),courseEnrollment));
             } else {
-                List<StudentLessonStatusResponse> studentLessonStatusResponses = mapLessonsToStatusResponses(chapter.getLessons(),courseEnrollment);
-                chapterResponse.setStudentLessonStatusResponses(studentLessonStatusResponses);
+                List<StudentLesson> studentLessons = studentLessonRepository.findByLessonChapterAndCourseEnrollment(chapter,courseEnrollment);
+                chapterResponse.setStudentLessonStatusResponses(lessonMapper.studentLessonsToStudentLessonStatusResponses(studentLessons));
             }
 
             chapterResponses.add(chapterResponse);
@@ -165,30 +185,6 @@ public class CourseEnrollmentServiceImpl implements CourseEnrollmentService {
         return chapterResponses;
     }
 
-    private List<StudentLessonStatusResponse> mapLessonsToStatusResponses(List<Lesson> lessons,CourseEnrollment courseEnrollment) {
-        List<StudentLessonStatusResponse> responses = new ArrayList<>();
-        for (Lesson lesson : lessons) {
-            StudentLessonStatusResponse response = new StudentLessonStatusResponse();
-             response.setTitle(lesson.getTitle());
-             response.setLesson_id(lesson.getId());
-
-             boolean hasLesson =true;
-
-             for (StudentLesson studentLesson :courseEnrollment.getStudentLessons()){
-                 if (studentLesson.getLesson()==lesson){
-                     response.setId(studentLesson.getId());
-                     response.setStudentLessonStatus(studentLesson.getStudentLessonStatus());
-                 }else {
-                     hasLesson = false;
-                 }
-             }
-             if (hasLesson){
-                 responses.add(response);
-             }
-
-        }
-        return responses;
-    }
 
 
 
@@ -216,4 +212,7 @@ public class CourseEnrollmentServiceImpl implements CourseEnrollmentService {
         );
 
     }
+
+
+
 }

@@ -7,5 +7,4 @@ public interface StudentQuizService {
 
     QuizCorrectionResponse correctQuiz(QuizCorrectionDto quizCorrectionDto ,String email);
 
-
 }

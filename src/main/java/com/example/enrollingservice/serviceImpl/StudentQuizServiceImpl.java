@@ -1,22 +1,26 @@
 package com.example.enrollingservice.serviceImpl;
 
+import com.example.enrollingservice.Enums.StudentLessonStatus;
 import com.example.enrollingservice.dto.AnswerDto;
 import com.example.enrollingservice.dto.QuizCorrectionDto;
 import com.example.enrollingservice.dto.QuizzCorrection.*;
+import com.example.enrollingservice.exception.BadRequestException;
 import com.example.enrollingservice.exception.ResourceNotFoundException;
+import com.example.enrollingservice.model.CourseEnrollment;
 import com.example.enrollingservice.model.Quizzes.ExplanatoryQuestion;
 import com.example.enrollingservice.model.Quizzes.MultipleChoiceQuestion;
 import com.example.enrollingservice.model.Quizzes.Quiz;
 import com.example.enrollingservice.model.Quizzes.TrueFalseQuestion;
+import com.example.enrollingservice.model.StudentLesson;
 import com.example.enrollingservice.model.StudentQuiz;
-import com.example.enrollingservice.repository.QuizRepository;
-import com.example.enrollingservice.repository.StudentQuizRepository;
-import com.example.enrollingservice.repository.StudentRepository;
+import com.example.enrollingservice.repository.*;
 import com.example.enrollingservice.response.CorrectionResponse;
 import com.example.enrollingservice.response.ExplanatoryQuestionsCorrectionResponse;
 import com.example.enrollingservice.response.QuizCorrectionResponse;
 import com.example.enrollingservice.service.AiService;
 import com.example.enrollingservice.service.StudentQuizService;
+import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -38,15 +42,24 @@ public class StudentQuizServiceImpl implements StudentQuizService {
     final
     AiService aiService;
 
-    public StudentQuizServiceImpl(QuizRepository quizRepository, StudentQuizRepository studentQuizRepository, StudentRepository studentRepository, AiService aiService) {
+    final
+    StudentLessonRepository studentLessonRepository;
+
+    final
+    CourseEnrollmentRepository courseEnrollmentRepository;
+
+    public StudentQuizServiceImpl(QuizRepository quizRepository, StudentQuizRepository studentQuizRepository, StudentRepository studentRepository, AiService aiService, StudentLessonRepository studentLessonRepository, CourseEnrollmentRepository courseEnrollmentRepository) {
         this.quizRepository = quizRepository;
         this.studentQuizRepository = studentQuizRepository;
         this.studentRepository = studentRepository;
         this.aiService = aiService;
+        this.studentLessonRepository = studentLessonRepository;
+        this.courseEnrollmentRepository = courseEnrollmentRepository;
     }
 
 
     @Override
+    @Transactional
     public QuizCorrectionResponse correctQuiz(QuizCorrectionDto quizCorrectionDto,String email) {
 
         StudentQuiz studentQuiz = findStudentQuiz(email,quizCorrectionDto.getId());
@@ -63,6 +76,10 @@ public class StudentQuizServiceImpl implements StudentQuizService {
 
         QuizCorrectionResponse quizCorrectionResponse = new QuizCorrectionResponse();
 
+
+        if(studentQuiz.getIsPassed()){
+            throw new BadRequestException("you have already passed this quiz");
+        }
 
         if (!quiz.getQuestions().isEmpty()) {
             Object firstQuestion = quiz.getQuestions().get(0);
@@ -148,8 +165,9 @@ public class StudentQuizServiceImpl implements StudentQuizService {
                 }
 
                 ExplanatoryQuestionsCorrectionResponse explanatoryQuestionsCorrectionResponse = aiService.correctExplanatoryQuiz(explanatoryQuestionsDto);
-                quizCorrectionResponse.setAdvices(explanatoryQuestionsCorrectionResponse.getAdvice());
-                studentQuiz.setAdvices(explanatoryQuestionsCorrectionResponse.getAdvice());
+                quizCorrectionResponse.setAdvices(explanatoryQuestionsCorrectionResponse.getAdvices());
+                System.out.println(explanatoryQuestionsCorrectionResponse);
+                studentQuiz.setAdvices(explanatoryQuestionsCorrectionResponse.getAdvices());
                 mark = explanatoryQuestionsCorrectionResponse.getMark();
 
             }
@@ -158,20 +176,40 @@ public class StudentQuizServiceImpl implements StudentQuizService {
         }
 
         studentQuiz.setMark(mark);
-        if (mark>7D){
+        if (mark>5D){
             studentQuiz.setIsPassed(true);
         }else {
             studentQuiz.setIsPassed(false);
         }
 
-        studentQuizRepository.save(studentQuiz);
+        StudentQuiz studentQuiz1 = studentQuizRepository.save(studentQuiz);
+
+        if (isStudentLessonCompleted(studentQuiz1)){
+            StudentLesson studentLesson = studentQuiz1.getStudentLesson();
+            studentLesson.setStudentLessonStatus(StudentLessonStatus.COMPLETED);
+            studentLessonRepository.save(studentLesson);
+            quizCorrectionResponse.setLessonCompleted(true);
+            if (isCourseCompleted(studentQuiz1,studentLesson.getId())){
+                CourseEnrollment courseEnrollment = studentQuiz1.getStudentLesson().getCourseEnrollment();
+                courseEnrollment.setIsCompleted(true);
+                courseEnrollmentRepository.save(courseEnrollment);
+                quizCorrectionResponse.setCourseCompleted(true);
+            }else {
+                quizCorrectionResponse.setCourseCompleted(false);
+            }
+        }else {
+            quizCorrectionResponse.setLessonCompleted(false);
+        }
 
         quizCorrectionResponse.setIsPassed(studentQuiz.getIsPassed());
         quizCorrectionResponse.setMark(mark);
         quizCorrectionResponse.setId(studentQuiz.getId());
 
+
         return quizCorrectionResponse;
     }
+
+
 
 
     private StudentQuiz findStudentQuiz(String email,Long quizId){
@@ -185,6 +223,32 @@ public class StudentQuizServiceImpl implements StudentQuizService {
                 () -> new ResourceNotFoundException("quiz not found with this id ")
         );
 
+    }
+
+    private Boolean isStudentLessonCompleted(StudentQuiz studentQuiz){
+        for (StudentQuiz studentQuiz1 : studentQuiz.getStudentLesson().getStudentQuizzes()){
+            if(!studentQuiz1.getIsPassed()){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private Boolean isCourseCompleted(StudentQuiz studentQuiz,Long studentLessonId){
+        for (StudentLesson studentLesson:studentQuiz.getStudentLesson().getCourseEnrollment().getStudentLessons()){
+
+            // passing the case when the student lesson is already checked that it is completed
+            if(Objects.equals(studentLesson.getId(), studentLessonId)){
+                continue;
+            }
+
+            if(studentLesson.getStudentLessonStatus()!=StudentLessonStatus.COMPLETED && !studentLesson.getStudentQuizzes().isEmpty() ){
+
+                return false;
+            }
+        }
+
+        return true;
     }
 
 }

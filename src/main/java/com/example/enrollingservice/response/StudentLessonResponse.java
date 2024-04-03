@@ -1,6 +1,7 @@
 package com.example.enrollingservice.response;
 
 
+import com.example.enrollingservice.Enums.StudentLessonStatus;
 import lombok.Data;
 
 import java.util.List;
@@ -11,6 +12,8 @@ public class StudentLessonResponse {
     private Long id;
 
     private Boolean isChatExist;
+
+    private StudentLessonStatus studentLessonStatus;
 
     private List<ChatHistoryResponse> chatHistoryResponseList;
 

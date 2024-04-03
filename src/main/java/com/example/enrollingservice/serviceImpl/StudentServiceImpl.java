@@ -26,14 +26,19 @@ public class StudentServiceImpl implements StudentService {
     final
     StudentQuizRepository studentQuizRepository;
 
-    @Autowired
+    final
     CourseEnrollmentRepository courseEnrollmentRepository;
 
-    public StudentServiceImpl(StudentRepository studentRepository, StudentLessonRepository studentLessonRepository, ChatHistoryRepository chatHistoryRepository, StudentQuizRepository studentQuizRepository) {
+    final
+    CourseNotesRepository courseNotesRepository;
+
+    public StudentServiceImpl(StudentRepository studentRepository, StudentLessonRepository studentLessonRepository, ChatHistoryRepository chatHistoryRepository, StudentQuizRepository studentQuizRepository, CourseEnrollmentRepository courseEnrollmentRepository, CourseNotesRepository courseNotesRepository) {
         this.studentRepository = studentRepository;
         this.studentLessonRepository = studentLessonRepository;
         this.chatHistoryRepository = chatHistoryRepository;
         this.studentQuizRepository = studentQuizRepository;
+        this.courseEnrollmentRepository = courseEnrollmentRepository;
+        this.courseNotesRepository = courseNotesRepository;
     }
 
     @Override
@@ -50,6 +55,11 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public Boolean studentHasEnrollment(String email, Long courseEnrollmentId) {
         return courseEnrollmentRepository.findByIdAndStudentEmail(courseEnrollmentId,email).isPresent();
+    }
+
+    @Override
+    public Boolean studentHasCourseNote(String email, Long courseNoteId) {
+        return courseNotesRepository.findByIdAndStudentLessonCourseEnrollmentStudentEmail(courseNoteId,email).isPresent();
     }
 
     Student findStudentByEmail(String email){

@@ -11,6 +11,8 @@ import com.example.enrollingservice.response.CourseNotesResponse;
 import com.example.enrollingservice.service.CourseNotesService;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 
 @Service
 public class CourseNotesServiceImpl implements CourseNotesService {
@@ -47,6 +49,14 @@ public class CourseNotesServiceImpl implements CourseNotesService {
     @Override
     public void deleteCourseNote(Long id) {
         courseNotesRepository.deleteById(id);
+    }
+
+    @Override
+    public List<CourseNotesResponse> getCourseNotes(Long studentLessonId) {
+
+        List<CourseNotes> courseNotes = courseNotesRepository.findByStudentLessonId(studentLessonId);
+
+        return courseNotesMapper.courseNotesListToCourseNotesResponseList(courseNotes);
     }
 
     private StudentLesson findCourseNotesById(Long id){

@@ -10,7 +10,11 @@ public class StudentQuizResponse {
 
     private Long id;
 
+    private Long quiz_id;
+
     private Boolean isPassed;
+
+    private Double mark;
 
     private List<String> advices;
 

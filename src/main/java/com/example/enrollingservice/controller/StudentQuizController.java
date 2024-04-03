@@ -9,7 +9,6 @@ import com.example.enrollingservice.service.AuthService;
 import com.example.enrollingservice.service.StudentQuizService;
 import com.example.enrollingservice.service.StudentService;
 import com.example.enrollingservice.util.ApiResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,14 +20,20 @@ public class StudentQuizController {
     @Value("${auth.url}")
     private String authUrl;
 
-    @Autowired
+    final
     AuthService authService;
 
-    @Autowired
+    final
     StudentQuizService studentQuizService;
 
-    @Autowired
+    final
     StudentService studentService;
+
+    public StudentQuizController(AuthService authService, StudentQuizService studentQuizService, StudentService studentService) {
+        this.authService = authService;
+        this.studentQuizService = studentQuizService;
+        this.studentService = studentService;
+    }
 
     @PostMapping("/")
     ResponseEntity<ApiResponse<QuizCorrectionResponse>> correctQuiz(@RequestBody QuizCorrectionDto quizCorrectionDto, @RequestHeader("Authorization")String token){

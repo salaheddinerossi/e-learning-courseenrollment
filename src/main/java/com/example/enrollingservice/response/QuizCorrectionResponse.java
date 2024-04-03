@@ -16,4 +16,9 @@ public class QuizCorrectionResponse {
 
     private List<String> advices;
 
+    private Boolean lessonCompleted;
+
+    private Boolean courseCompleted;
+
+
 }

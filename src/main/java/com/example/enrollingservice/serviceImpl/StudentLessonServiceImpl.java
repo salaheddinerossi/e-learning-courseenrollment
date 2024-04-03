@@ -65,6 +65,7 @@ public class StudentLessonServiceImpl implements StudentLessonService {
         StudentLesson studentLesson = findStudentLessonById(id);
         StudentLessonResponse studentLessonResponse = new StudentLessonResponse();
         studentLessonResponse.setId(studentLesson.getId());
+        studentLessonResponse.setStudentLessonStatus(studentLesson.getStudentLessonStatus());
 
         List<CourseNotes> courseNotes = courseNotesRepository.findByStudentLesson(studentLesson);
         List<CourseNotesResponse> courseNotesResponses = courseNotesMapper.courseNotesListToCourseNotesResponseList(courseNotes);

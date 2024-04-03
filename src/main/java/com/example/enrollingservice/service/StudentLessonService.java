@@ -4,8 +4,6 @@ import com.example.enrollingservice.response.StudentLessonResponse;
 
 public interface StudentLessonService {
 
-    // get Student lesson
     StudentLessonResponse getStudentLesson(Long id);
-
 
 }
