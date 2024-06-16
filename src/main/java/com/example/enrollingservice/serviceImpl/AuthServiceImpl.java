@@ -28,7 +28,10 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public UserDetailsDto getUserDetailsFromAuthService(String serviceUrl, String token) {
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + token);
+        if (!token.startsWith("Bearer ")) {
+            token = "Bearer " + token;
+        }
+        headers.set("Authorization", token);
         HttpEntity<String> entity = new HttpEntity<>("parameters", headers);
 
         try{
@@ -38,7 +41,6 @@ public class AuthServiceImpl implements AuthService {
                     entity,
                     UserDetailsDto.class
             );
-
             return response.getBody();
 
         }catch (HttpClientErrorException ex){

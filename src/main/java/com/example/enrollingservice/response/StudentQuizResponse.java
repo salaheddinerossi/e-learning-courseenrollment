@@ -2,6 +2,7 @@ package com.example.enrollingservice.response;
 
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -13,6 +14,10 @@ public class StudentQuizResponse {
     private Long quiz_id;
 
     private Boolean isPassed;
+
+    private List<QuestionResponses> questionResponsesList = new ArrayList<>();
+
+    private String type;
 
     private Double mark;
 

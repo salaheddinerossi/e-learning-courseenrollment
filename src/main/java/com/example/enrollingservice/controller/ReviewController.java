@@ -52,6 +52,6 @@ public class ReviewController {
     ResponseEntity<ApiResponse<List<ReviewResponse>>> getReviews(@PathVariable Long courseId){
 
         List<ReviewResponse> reviewResponses = reviewService.getReviews(courseId);
-        return ResponseEntity.ok(new ApiResponse<>(true,"review has been added", reviewResponses));
+        return ResponseEntity.ok(new ApiResponse<>(true,"review has been fetched", reviewResponses));
     }
 }

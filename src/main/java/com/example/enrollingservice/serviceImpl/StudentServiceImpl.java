@@ -43,7 +43,6 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public Boolean studentHasStudentLesson(String email, Long studentLessonId) {
-
         return findStudentLessonById(studentLessonId).getCourseEnrollment().getStudent() == findStudentByEmail(email);
     }
 

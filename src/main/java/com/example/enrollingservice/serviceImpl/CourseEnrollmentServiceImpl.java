@@ -3,6 +3,7 @@ package com.example.enrollingservice.serviceImpl;
 import com.example.enrollingservice.Enums.StudentLessonStatus;
 import com.example.enrollingservice.exception.BadRequestException;
 import com.example.enrollingservice.exception.ResourceNotFoundException;
+import com.example.enrollingservice.mapper.CourseMapper;
 import com.example.enrollingservice.mapper.LessonMapper;
 import com.example.enrollingservice.model.*;
 import com.example.enrollingservice.model.Quizzes.Quiz;
@@ -10,9 +11,7 @@ import com.example.enrollingservice.repository.CourseEnrollmentRepository;
 import com.example.enrollingservice.repository.CourseRepository;
 import com.example.enrollingservice.repository.StudentLessonRepository;
 import com.example.enrollingservice.repository.StudentRepository;
-import com.example.enrollingservice.response.ChapterResponse;
-import com.example.enrollingservice.response.CourseEnrollmentResponse;
-import com.example.enrollingservice.response.StudentLessonStatusResponse;
+import com.example.enrollingservice.response.*;
 import com.example.enrollingservice.service.CourseEnrollmentService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -40,17 +40,21 @@ public class CourseEnrollmentServiceImpl implements CourseEnrollmentService {
     final
     LessonMapper lessonMapper;
 
-    public CourseEnrollmentServiceImpl(CourseEnrollmentRepository courseEnrollmentRepository, CourseRepository courseRepository, StudentRepository studentRepository, LessonMapper lessonMapper, StudentLessonRepository studentLessonRepository) {
+    final CourseMapper courseMapper;
+
+
+    public CourseEnrollmentServiceImpl(CourseEnrollmentRepository courseEnrollmentRepository, CourseRepository courseRepository, StudentRepository studentRepository, LessonMapper lessonMapper, StudentLessonRepository studentLessonRepository,CourseMapper courseMapper) {
         this.courseEnrollmentRepository = courseEnrollmentRepository;
         this.courseRepository = courseRepository;
         this.studentRepository = studentRepository;
         this.lessonMapper = lessonMapper;
         this.studentLessonRepository = studentLessonRepository;
+        this.courseMapper = courseMapper;
     }
 
     @Override
     @Transactional
-    public void enrollCourse(Long courseId, String email) {
+    public Long enrollCourse(Long courseId, String email) {
         CourseEnrollment courseEnrollment = new CourseEnrollment();
 
         Course course = findCourseById(courseId);
@@ -83,8 +87,10 @@ public class CourseEnrollmentServiceImpl implements CourseEnrollmentService {
             studentLesson.setCourseEnrollment(courseEnrollment);
             studentLesson.setLesson(lesson);
             studentLesson.setStudentLessonStatus(StudentLessonStatus.INITIAL);
-
+            Boolean hasQuiz = false;
             for (Quiz quiz:lesson.getQuizzes()){
+
+                hasQuiz=true;
 
                 if(quiz.getIsDeleted()){
                     continue;
@@ -97,38 +103,61 @@ public class CourseEnrollmentServiceImpl implements CourseEnrollmentService {
 
             }
 
+            if (!hasQuiz){
+                studentLesson.setStudentLessonStatus(StudentLessonStatus.COMPLETED);
+            }
+
             courseEnrollment.getStudentLessons().add(studentLesson);
 
         }
 
-        courseEnrollmentRepository.save(courseEnrollment);
+        CourseEnrollment courseEnrollment1 = courseEnrollmentRepository.save(courseEnrollment);
+
+        return courseEnrollment1.getId();
 
     }
 
     @Override
-    @Transactional
     public CourseEnrollmentResponse getCourseEnrollmentResponse(Long id) {
 
         CourseEnrollment courseEnrollment = findCourseEnrollmentById(id);
         Course course = courseEnrollment.getCourse();
 
+
+
         CourseEnrollmentResponse courseEnrollmentResponse = new CourseEnrollmentResponse();
         courseEnrollmentResponse.setId(courseEnrollment.getId());
-
+        courseEnrollmentResponse.setCurrentLessonId(courseEnrollment.getCurrentLessonId());
+        courseEnrollmentResponse.setCategoryId(courseEnrollment.getCourse().getCategory().getId());
+        courseEnrollmentResponse.setCategoryName(courseEnrollment.getCourse().getCategory().getTitle());
+        courseEnrollmentResponse.setIsReviewed(courseEnrollment.getReview() != null);
+        courseEnrollmentResponse.setIsCourseCompleted(courseEnrollment.getIsCompleted());
         List<ChapterResponse> chapterResponses = mapChaptersToChapterResponses(course.getChapters(),courseEnrollment);
         courseEnrollmentResponse.setChapterResponses(chapterResponses);
 
-        for (Chapter chapter:course.getChapters()){
+        return courseEnrollmentResponse;
+    }
 
+    @Override
+    public List<CourseResponse> getEnrolledCourses(String email) {
 
+        List<Course> courses = courseRepository.findByCourseEnrollmentsStudentEmail(email);
+        return courseMapper.courseListToCourseResponseList(courses);
+    }
 
+    @Override
+    public List<CourseEnrollmentIds> getEnrolledCoursesWithIds(String email) {
+        List<CourseEnrollment> courseEnrollments = courseEnrollmentRepository.findByStudentEmail(email);
 
+        List<CourseEnrollmentIds> courseEnrollmentIdsList = new ArrayList<>();
+        for (CourseEnrollment courseEnrollment:courseEnrollments){
+            CourseEnrollmentIds courseEnrollmentIds = new CourseEnrollmentIds();
+            courseEnrollmentIds.setCourse_enrollment_id(courseEnrollment.getId());
+            courseEnrollmentIds.setCourse_id(courseEnrollment.getCourse().getId());
+            courseEnrollmentIdsList.add(courseEnrollmentIds);
         }
 
-
-
-
-        return courseEnrollmentResponse;
+        return courseEnrollmentIdsList;
     }
 
 
@@ -162,27 +191,48 @@ public class CourseEnrollmentServiceImpl implements CourseEnrollmentService {
     }
 
 
-    private List<ChapterResponse> mapChaptersToChapterResponses(List<Chapter> chapters,CourseEnrollment courseEnrollment) {
+    private List<ChapterResponse> mapChaptersToChapterResponses(List<Chapter> chapters, CourseEnrollment courseEnrollment) {
         List<ChapterResponse> chapterResponses = new ArrayList<>();
 
         for (Chapter chapter : chapters) {
+            if (!hasStudentLessons(chapter, courseEnrollment)) {
+                continue;
+            }
+
             ChapterResponse chapterResponse = new ChapterResponse();
             chapterResponse.setId(chapter.getId());
             chapterResponse.setTitle(chapter.getTitle());
             chapterResponse.setContainsChapters(chapter.getContainsChapters());
 
-
             if (chapter.getContainsChapters()) {
-                chapterResponse.setChapterResponses(mapChaptersToChapterResponses(chapter.getChildChapters(),courseEnrollment));
+                List<ChapterResponse> subChapterResponses = mapChaptersToChapterResponses(chapter.getChildChapters(), courseEnrollment);
+                if (!subChapterResponses.isEmpty()) {
+                    chapterResponse.setChapterResponses(subChapterResponses);
+                }
             } else {
-                List<StudentLesson> studentLessons = studentLessonRepository.findByLessonChapterAndCourseEnrollment(chapter,courseEnrollment);
-                chapterResponse.setStudentLessonStatusResponses(lessonMapper.studentLessonsToStudentLessonStatusResponses(studentLessons));
+                List<StudentLessonStatusResponse> studentLessonStatusResponses = studentLessonRepository
+                        .findByLessonChapterAndCourseEnrollment(chapter, courseEnrollment)
+                        .stream()
+                        .map(lessonMapper::studentLessonToStudentLessonStatusResponse)
+                        .collect(Collectors.toList());
+                chapterResponse.setStudentLessonStatusResponses(studentLessonStatusResponses);
             }
 
-            chapterResponses.add(chapterResponse);
+            if (!chapterResponse.getStudentLessonStatusResponses().isEmpty() || chapterResponse.getChapterResponses() != null && !chapterResponse.getChapterResponses().isEmpty()) {
+                chapterResponses.add(chapterResponse);
+            }
         }
 
         return chapterResponses;
+    }
+
+    private boolean hasStudentLessons(Chapter chapter, CourseEnrollment courseEnrollment) {
+        if (chapter.getContainsChapters()) {
+            return chapter.getChildChapters().stream()
+                    .anyMatch(subChapter -> hasStudentLessons(subChapter, courseEnrollment));
+        } else {
+            return !studentLessonRepository.findByLessonChapterAndCourseEnrollment(chapter, courseEnrollment).isEmpty();
+        }
     }
 
 

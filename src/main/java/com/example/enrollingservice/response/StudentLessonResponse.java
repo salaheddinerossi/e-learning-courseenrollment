@@ -7,9 +7,13 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class StudentLessonResponse {
+    public class StudentLessonResponse {
 
     private Long id;
+
+    private Long chatId;
+
+    private Long lessonId;
 
     private Boolean isChatExist;
 

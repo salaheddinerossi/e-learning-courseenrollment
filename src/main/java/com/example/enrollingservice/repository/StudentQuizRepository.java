@@ -11,4 +11,8 @@ public interface StudentQuizRepository extends JpaRepository<StudentQuiz,Long> {
     List<StudentQuiz> findByStudentLesson(StudentLesson studentLesson);
 
     Optional<StudentQuiz> findByStudentLessonCourseEnrollmentStudentEmailAndQuizId(String email, Long quizId);
+
+    List<StudentQuiz> findByStudentLessonId(Long id);
 }
+
+

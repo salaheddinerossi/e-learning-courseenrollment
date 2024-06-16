@@ -11,4 +11,6 @@ public class ReviewResponse {
 
     private Integer review;
 
+    private String userName;
+
 }

@@ -146,7 +146,10 @@ public class StudentQuizServiceImpl implements StudentQuizService {
                     }
                 }
 
+                System.out.println("test1");
                 CorrectionResponse correctionResponse = aiService.correctTrueFalseQuiz(trueFalseQuestionsDto);
+                System.out.println(correctionResponse);
+
                 quizCorrectionResponse.setAdvices(correctionResponse.getAdvices());
                 studentQuiz.setAdvices(correctionResponse.getAdvices());
                 mark = (correctAnswers/questionsNumber) *10;

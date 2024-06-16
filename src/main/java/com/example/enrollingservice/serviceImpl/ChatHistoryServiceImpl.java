@@ -67,14 +67,14 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
 
     @Override
     @Transactional
-    public String askChatBot(Long chatBotId, QuestionDto question) {
+    public String askChatBot(Long studentLessonId, QuestionDto question) {
 
-        ChatHistory chatHistory = findChatHistoryById(chatBotId);
+        ChatHistory chatHistory = chatHistoryRepository.findByStudentLessonId(studentLessonId);
 
         List<MessageDto> messageDtos = new ArrayList<>();
 
         messageDtos.add(new MessageDto("system",chatHistory.getSystemMessage()));
-        messageDtos.add(new MessageDto("system",chatHistory.getTranscribe()));
+        messageDtos.add(new MessageDto("system",chatHistory.getStudentLesson().getLesson().getTranscribe()));
         for (ChatRecord chatRecord:chatHistory.getChatRecords()){
 
             String role;

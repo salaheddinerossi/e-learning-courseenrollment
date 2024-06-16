@@ -52,15 +52,15 @@ public class ChatHistoryController {
         return ResponseEntity.ok(new ApiResponse<>(true,"chat has been created",null));
     }
 
-    @PostMapping("/question/{chatId}")
-    ResponseEntity<ApiResponse<String>> askChatBot(@RequestBody QuestionDto questionDto,@PathVariable long chatId, @RequestHeader("Authorization") String token){
+    @PostMapping("/question/{studentLessonId}")
+    ResponseEntity<ApiResponse<String>> askChatBot(@RequestBody QuestionDto questionDto,@PathVariable long studentLessonId, @RequestHeader("Authorization") String token){
         UserDetailsDto userDetailsDto = authService.getUserDetailsFromAuthService(authUrl,token);
 
-        if (!studentService.studentHasStudentChat(userDetailsDto.getEmail(),chatId)){
+        if (!studentService.studentHasStudentLesson(userDetailsDto.getEmail(),studentLessonId)){
             throw new UnauthorizedException("you are not the owner of this chat");
         }
 
-        String reply  = chatHistoryService.askChatBot(chatId,questionDto);
+        String reply  = chatHistoryService.askChatBot(studentLessonId,questionDto);
         return ResponseEntity.ok(new ApiResponse<>(true,"chat has been created",reply));
     }
 

@@ -37,11 +37,9 @@ public class StudentLessonController {
     @GetMapping("/{studentLessonId}")
     ResponseEntity<ApiResponse<StudentLessonResponse>> getStudentLesson(@PathVariable Long studentLessonId, @RequestHeader("Authorization") String token){
         UserDetailsDto userDetailsDto = authService.getUserDetailsFromAuthService(authUrl,token);
-
         if (!studentService.studentHasStudentLesson(userDetailsDto.getEmail(),studentLessonId)){
             throw new UnauthorizedException("you are not the owner of this student lesson ");
         }
-
         return ResponseEntity.ok(new ApiResponse<>(true,"student lesson has been fetched successfully",studentLessonService.getStudentLesson(studentLessonId)));
     }
 

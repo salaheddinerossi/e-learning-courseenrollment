@@ -41,8 +41,13 @@ public class ReviewServiceImpl implements ReviewService {
             throw  new BadRequestException("you need to complete the course first to add a review");
         }
 
+        if (courseEnrollment.getReview() != null){
+            throw  new BadRequestException("review already submitted");
+        }
+
         Review review = reviewMapper.reviewDtoToReview(reviewDto);
         review.setCourseEnrollment(courseEnrollment);
+        courseEnrollment.setReview(review);
 
         reviewRepository.save(review);
 
@@ -51,7 +56,8 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public List<ReviewResponse> getReviews(Long courseId) {
-        return reviewMapper.reviewListToReviewResponseList(reviewRepository.findByCourseEnrollmentCourseId(courseId));
+        List<Review> review = reviewRepository.findByCourseEnrollmentCourseId(courseId);
+        return reviewMapper.reviewListToReviewResponseList(review);
     }
 
     private CourseEnrollment findCourseEnrollmentById(Long id){

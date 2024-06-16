@@ -17,4 +17,5 @@ public interface LessonMapper {
 
     List<StudentLessonStatusResponse> studentLessonsToStudentLessonStatusResponses(List<StudentLesson> studentLessons);
 
+
 }

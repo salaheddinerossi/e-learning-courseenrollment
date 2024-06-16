@@ -37,7 +37,6 @@ public class StudentQuizController {
 
     @PostMapping("/")
     ResponseEntity<ApiResponse<QuizCorrectionResponse>> correctQuiz(@RequestBody QuizCorrectionDto quizCorrectionDto, @RequestHeader("Authorization")String token){
-
         UserDetailsDto userDetailsDto = authService.getUserDetailsFromAuthService(authUrl,token);
 
         if (!authService.isStudent(userDetailsDto)){

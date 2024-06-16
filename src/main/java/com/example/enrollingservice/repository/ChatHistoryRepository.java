@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface ChatHistoryRepository extends JpaRepository<ChatHistory,Long> {
     Optional<ChatHistory> findByStudentLesson(StudentLesson studentLesson);
 
+    ChatHistory findByStudentLessonId(Long studentLessonId);
 }
