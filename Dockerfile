@@ -23,7 +23,7 @@ WORKDIR /app
 COPY --from=build /app/target/EnrollingService-0.0.1-SNAPSHOT.jar /app/app.jar
 
 # Expose the port the app runs on
-EXPOSE 8082
+EXPOSE 8084
 
 # Run the application
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
