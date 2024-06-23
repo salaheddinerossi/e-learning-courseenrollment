@@ -58,41 +58,40 @@ public class CourseEnrollmentServiceImpl implements CourseEnrollmentService {
         CourseEnrollment courseEnrollment = new CourseEnrollment();
 
         Course course = findCourseById(courseId);
-        Student student =findStudentByEmail(email);
+        Student student = findStudentByEmail(email);
 
-        if(courseEnrollmentRepository.findByCourseIdAndStudent(courseId,student).isPresent()){
-            throw  new BadRequestException("you have already enrolled this course");
+        if (courseEnrollmentRepository.findByCourseIdAndStudent(courseId, student).isPresent()) {
+            throw new BadRequestException("You have already enrolled in this course");
         }
-
 
         courseEnrollment.setCourse(course);
         courseEnrollment.setStudent(student);
 
-        for (Lesson lesson:getAllLessons(course)){
-
-            if (lesson.getIsDeleted()){
+        for (Lesson lesson : getAllLessons(course)) {
+            if (lesson.getIsDeleted()) {
                 continue;
             }
 
-            if (courseEnrollment.getCurrentLessonId()==null){
-                courseEnrollment.setCurrentLessonId(lesson.getId());
-            }else {
-                if (courseEnrollment.getCurrentLessonId()> lesson.getId()){
-                    courseEnrollment.setCurrentLessonId(lesson.getId());
-                }
-            }
-
             StudentLesson studentLesson = new StudentLesson();
-
             studentLesson.setCourseEnrollment(courseEnrollment);
             studentLesson.setLesson(lesson);
             studentLesson.setStudentLessonStatus(StudentLessonStatus.INITIAL);
+
+            studentLesson = studentLessonRepository.save(studentLesson);
+
+            if (courseEnrollment.getCurrentLessonId() == null) {
+                courseEnrollment.setCurrentLessonId(studentLesson.getId());
+            } else {
+                if (courseEnrollment.getCurrentLessonId() > studentLesson.getId()) {
+                    courseEnrollment.setCurrentLessonId(studentLesson.getId());
+                }
+            }
+
             Boolean hasQuiz = false;
-            for (Quiz quiz:lesson.getQuizzes()){
+            for (Quiz quiz : lesson.getQuizzes()) {
+                hasQuiz = true;
 
-                hasQuiz=true;
-
-                if(quiz.getIsDeleted()){
+                if (quiz.getIsDeleted()) {
                     continue;
                 }
 
@@ -100,23 +99,19 @@ public class CourseEnrollmentServiceImpl implements CourseEnrollmentService {
                 studentQuiz.setQuiz(quiz);
                 studentQuiz.setStudentLesson(studentLesson);
                 studentLesson.getStudentQuizzes().add(studentQuiz);
-
             }
 
-            if (!hasQuiz){
+            if (!hasQuiz) {
                 studentLesson.setStudentLessonStatus(StudentLessonStatus.COMPLETED);
             }
 
             courseEnrollment.getStudentLessons().add(studentLesson);
-
         }
 
-        CourseEnrollment courseEnrollment1 = courseEnrollmentRepository.save(courseEnrollment);
+        CourseEnrollment savedCourseEnrollment = courseEnrollmentRepository.save(courseEnrollment);
 
-        return courseEnrollment1.getId();
-
+        return savedCourseEnrollment.getId();
     }
-
     @Override
     public CourseEnrollmentResponse getCourseEnrollmentResponse(Long id) {
 

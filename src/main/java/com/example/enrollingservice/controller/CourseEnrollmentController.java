@@ -48,9 +48,9 @@ public class CourseEnrollmentController {
             throw new UnauthorizedException("you need to login first");
         }
 
-        courseEnrollmentService.enrollCourse(id,userDetailsDto.getEmail());
+        Long courseEnrollmentID = courseEnrollmentService.enrollCourse(id,userDetailsDto.getEmail());
 
-        return ResponseEntity.ok(new ApiResponse<>(true,"course has been enrolled", null));
+        return ResponseEntity.ok(new ApiResponse<>(true,"course has been enrolled", courseEnrollmentID));
 
     }
 
