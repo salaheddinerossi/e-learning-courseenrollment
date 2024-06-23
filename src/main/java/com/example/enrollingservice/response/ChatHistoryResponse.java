@@ -7,8 +7,8 @@ import lombok.Data;
 public class ChatHistoryResponse {
     private Long id;
 
-    private String record;
+    private String content;
 
-    private Boolean fromStudent;
+    private Boolean fromAssistant;
 
 }

@@ -1,5 +1,6 @@
 package com.example.enrollingservice.model;
 
+import com.example.enrollingservice.model.Quizzes.Quiz;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -16,6 +17,8 @@ public class Lesson {
     private Long id;
 
     private String title;
+
+    private String transcribe;
 
     @Column
     private Boolean isDeleted;

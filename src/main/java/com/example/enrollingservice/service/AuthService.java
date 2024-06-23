@@ -12,4 +12,6 @@ public interface AuthService {
 
     public Boolean isTeacher(String serviceUrl,String token);
 
+    public Boolean isStudent(UserDetailsDto userDetailsDto);
+
 }

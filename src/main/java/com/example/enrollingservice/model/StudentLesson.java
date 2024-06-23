@@ -30,8 +30,8 @@ public class StudentLesson {
     @OneToMany(mappedBy = "studentLesson", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CourseNotes> courseNotes = new ArrayList<>();
 
-    @OneToMany(mappedBy = "studentLesson", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ChatHistory> chatHistories = new ArrayList<>();
+    @OneToOne(mappedBy = "studentLesson", cascade = CascadeType.ALL, orphanRemoval = true)
+    private ChatHistory chatHistory;
 
     @OneToMany(mappedBy = "studentLesson", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<StudentQuiz> studentQuizzes = new ArrayList<>();
