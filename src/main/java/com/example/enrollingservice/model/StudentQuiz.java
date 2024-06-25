@@ -33,4 +33,7 @@ public class StudentQuiz {
     @JoinColumn(name = "quiz_id")
     Quiz quiz;
 
+    public boolean getIsPassed() {
+        return this.isPassed != null && this.isPassed;
+    }
 }
