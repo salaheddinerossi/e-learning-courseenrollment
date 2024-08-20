@@ -10,7 +10,7 @@ import java.util.Optional;
 public interface CourseNotesRepository extends JpaRepository<CourseNotes,Long> {
     List<CourseNotes> findByStudentLesson(StudentLesson studentLesson);
 
-    Optional<CourseNotes> findByIdAndStudentLessonCourseEnrollmentStudentEmail(Long courseNoteId, String email);
+    Optional<CourseNotes> findByIdAndStudentLessonCourseEnrollmentStudentEmail(Long courseNoteId,String email);
 
     List<CourseNotes> findByStudentLessonId(Long studentLessonId);
 }

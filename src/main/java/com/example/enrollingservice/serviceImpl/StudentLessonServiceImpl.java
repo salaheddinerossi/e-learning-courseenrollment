@@ -12,7 +12,6 @@ import com.example.enrollingservice.model.Quizzes.TrueFalseQuestion;
 import com.example.enrollingservice.repository.*;
 import com.example.enrollingservice.response.*;
 import com.example.enrollingservice.service.StudentLessonService;
-import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;

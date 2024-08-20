@@ -138,7 +138,7 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
         chatHistoryRepository.save(chatHistory);
     }
 
-    ChatHistory findChatHistoryById(Long id){
+    private ChatHistory findChatHistoryById(Long id){
         return chatHistoryRepository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("no chat history found with this id")
         );

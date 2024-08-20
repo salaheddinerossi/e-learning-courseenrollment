@@ -7,6 +7,7 @@ import lombok.Data;
 @Data
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@Table(name = "`user`")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
